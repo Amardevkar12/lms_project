@@ -31,69 +31,66 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getServletPath();
+    // 🔥 CORS HEADERS (IMPORTANT FIX)
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
 
-        // 🔥 Public APIs bypass (login/register)
-        if (path.startsWith("/api/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+    // 🔥 OPTIONS bypass
+    if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+        filterChain.doFilter(request, response);
+        return;
+    }
 
-        // 🔥 OPTIONS request bypass (CORS preflight)
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+    try {
+        String jwt = parseJwt(request);
 
-        try {
-            String jwt = parseJwt(request);
+        if (jwt != null) {
 
-            if (jwt != null) {
-                String username = jwtUtil.extractUsername(jwt);
+            String username = jwtUtil.extractUsername(jwt);
 
-                if (username != null &&
-                        SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (username != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                    UserDetails userDetails =
-                            userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(username);
 
-                    if (jwtUtil.validateToken(jwt, userDetails)) {
+                if (jwtUtil.validateToken(jwt, userDetails)) {
 
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails,
-                                        null,
-                                        userDetails.getAuthorities()
-                                );
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                        authentication.setDetails(
-                                new WebAuthenticationDetailsSource().buildDetails(request)
-                        );
+                    auth.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    }
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
-
-        } catch (Exception e) {
-            logger.error("JWT Filter Error", e);
         }
 
-        filterChain.doFilter(request, response);
+    } catch (Exception e) {
+        logger.error("JWT Filter Error", e);
     }
 
-    // 🔥 JWT extract method
-    private String parseJwt(HttpServletRequest request) {
-        String headerAuth = request.getHeader("Authorization");
+    filterChain.doFilter(request, response);
+}
 
-        if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
-        }
+private String parseJwt(HttpServletRequest request) {
+    String headerAuth = request.getHeader("Authorization");
 
-        return null;
+    if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+        return headerAuth.substring(7);
     }
+
+    return null;
+}
 }
