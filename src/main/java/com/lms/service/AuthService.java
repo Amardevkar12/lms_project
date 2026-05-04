@@ -68,7 +68,7 @@ public class AuthService {
     }
 
     // ================= LOGIN =================
-    public AuthResponse login(LoginRequest request) {
+   public AuthResponse login(LoginRequest request) {
 
     User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new BadRequestException("Invalid email or password"));
@@ -77,11 +77,7 @@ public class AuthService {
         throw new BadRequestException("Invalid email or password");
     }
 
-    // 🔥 FORCE FIX (DO NOT JUST SET IN MEMORY)
-    if (!user.isEnabled()) {
-        user.setEnabled(true);
-        userRepository.save(user); // IMPORTANT FIX
-    }
+    // ❌ DO NOT CHANGE USER STATE HERE
 
     String token = jwtUtil.generateToken(user);
 
