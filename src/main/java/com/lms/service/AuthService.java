@@ -73,7 +73,7 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         // 🔥 SEND EMAIL
-        emailService.sendVerificationEmail(savedUser.getEmail(), token);
+        // emailService.sendVerificationEmail(savedUser.getEmail(), token);
 
         // optional JWT (after register)
         String jwt = jwtUtil.generateToken(savedUser);
