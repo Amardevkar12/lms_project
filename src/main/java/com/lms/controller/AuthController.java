@@ -5,40 +5,28 @@ import com.lms.dto.AuthResponse;
 import com.lms.dto.LoginRequest;
 import com.lms.dto.RegisterRequest;
 import com.lms.service.AuthService;
-import com.lms.service.EmailService;
 import com.lms.entity.User;
 import com.lms.repository.UserRepository;
 
 import jakarta.validation.Valid;
-
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(originPatterns = { "http://localhost:*", "http://127.0.0.1:*" })
+@CrossOrigin(origins = "*") // simple & safe for dev
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    
-
-    // ================= REGISTER (DTO BASED - MAIN) =================
+    // ================= REGISTER =================
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {
 
@@ -60,7 +48,7 @@ public class AuthController {
         );
     }
 
-    // ================= EMAIL VERIFICATION =================
+    // ================= EMAIL VERIFY =================
     @GetMapping("/verify-email")
     public ResponseEntity<ApiResponse> verifyEmail(@RequestParam String token) {
 
@@ -86,27 +74,6 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 new ApiResponse(true, "Email verified successfully", null)
-        );
-    }
-
-    // ================= OPTIONAL: SIMPLE REGISTER (if NOT using DTO) =================
-    @PostMapping("/register-simple")
-    public ResponseEntity<ApiResponse> registerSimple(@RequestBody User user) {
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setEnabled(false);
-
-        String token = UUID.randomUUID().toString();
-
-        user.setVerificationToken(token);
-        user.setTokenExpiry(LocalDateTime.now().plusMinutes(15));
-
-        userRepository.save(user);
-
-        emailService.sendVerificationEmail(user.getEmail(), token);
-
-        return ResponseEntity.ok(
-                new ApiResponse(true, "Check email to verify account", null)
         );
     }
 }
