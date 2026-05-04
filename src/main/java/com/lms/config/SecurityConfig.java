@@ -43,7 +43,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
 
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .cors(cors -> {})   // 👈 IMPORTANT: DO NOT set configurationSource here
 
         .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -63,7 +63,7 @@ public CorsConfigurationSource corsConfigurationSource() {
 
     CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOrigins(List.of(
+    config.setAllowedOriginPatterns(List.of(
             "http://localhost:4200",
             "https://lms-frotend-fmoq.vercel.app"
     ));
