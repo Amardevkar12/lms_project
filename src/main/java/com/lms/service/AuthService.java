@@ -77,7 +77,9 @@ public class AuthService {
         throw new BadRequestException("Invalid email or password");
     }
 
-    // ❌ DO NOT CHANGE USER STATE HERE
+    // 🔥 FORCE ENABLE (NO EMAIL SYSTEM)
+    user.setEnabled(true);
+    userRepository.save(user);
 
     String token = jwtUtil.generateToken(user);
 
