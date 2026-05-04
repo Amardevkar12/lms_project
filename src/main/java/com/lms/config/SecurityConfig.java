@@ -36,59 +36,59 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    // ================= SECURITY =================
+    // ================= SECURITY FILTER =================
     @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    http
-        .csrf(AbstractHttpConfigurer::disable)
+        http
+            .csrf(AbstractHttpConfigurer::disable)
 
-        .cors(cors -> {})   // 👈 IMPORTANT: DO NOT set configurationSource here
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-        .sessionManagement(session ->
+            .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
+            )
 
-        .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/**").permitAll()
-                .anyRequest().permitAll()
-        );
+                .anyRequest().authenticated()
+            )
 
-    return http.build();
-}
-    // ================= CORS (ONLY ONE - IMPORTANT) =================
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    // ================= CORS FIX =================
     @Bean
-public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
 
-    CorsConfiguration config = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOriginPatterns(List.of(
-            "http://localhost:4200",
-            "https://lms-frotend-fmoq.vercel.app"
-    ));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:4200",
+                "https://lms-frotend-fmoq.vercel.app"
+        ));
 
-    config.setAllowedMethods(List.of(
-            "GET","POST","PUT","DELETE","OPTIONS"
-    ));
+        config.setAllowedMethods(List.of(
+                "GET","POST","PUT","DELETE","OPTIONS"
+        ));
 
-    config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
 
-    config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
 
-    config.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
 
-    source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
-    return source;
-}
-    // ❌ REMOVE CorsFilter BEAN COMPLETELY (IMPORTANT)
-    // DO NOT USE CorsFilter + corsConfigurationSource together
-
-    // ================= AUTH =================
+    // ================= AUTH PROVIDER =================
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
 
@@ -101,12 +101,14 @@ public CorsConfigurationSource corsConfigurationSource() {
         return authProvider;
     }
 
+    // ================= AUTH MANAGER =================
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
+    // ================= PASSWORD =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
