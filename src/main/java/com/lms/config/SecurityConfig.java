@@ -65,33 +65,35 @@ public class SecurityConfig {
 
     // ================= CORS CONFIG (FINAL FIX) =================
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration config = new CorsConfiguration();
+    CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of(
-                "http://localhost:4200",
-                "http://127.0.0.1:4200",
-                "https://lms-frotend-fmoq.vercel.app"
-        ));
+    config.setAllowedOriginPatterns(List.of(
+            "http://localhost:4200",
+            "http://127.0.0.1:4200",
+            "https://lms-frotend-fmoq.vercel.app"
+    ));
 
-        config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
+    config.setAllowedMethods(List.of(
+            "GET","POST","PUT","DELETE","OPTIONS"
+    ));
 
-        config.setAllowedHeaders(List.of("*"));
+    config.setAllowedHeaders(List.of("*"));
 
-        config.setExposedHeaders(List.of("Authorization"));
+    config.setExposedHeaders(List.of("Authorization"));
 
-        config.setAllowCredentials(true);
+    config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+    UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", config);
+    source.registerCorsConfiguration("/**", config);
 
-        return source;
-    }@Bean
+    return source;
+}
+
+@Bean
 public org.springframework.web.filter.CorsFilter corsFilter() {
 
     CorsConfiguration config = new CorsConfiguration();
