@@ -64,29 +64,23 @@ public class SecurityConfig {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
-    configuration.setAllowedOriginPatterns(List.of(
-            "http://localhost:*",
-            "http://127.0.0.1:*",
-            "https://*.workers.dev",   // 🔥 Cloudflare Workers
-            "https://*.vercel.app"     // 🔥 अगर Vercel use करो
+    configuration.setAllowedOrigins(List.of(
+            "http://localhost:4200",
+            "https://leave-management-frontend.amardevkar059.workers.dev"
     ));
 
     configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
-    configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
-
+    configuration.setAllowedHeaders(List.of("*"));
     configuration.setExposedHeaders(List.of("Authorization"));
 
     configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
 }
-
     // @Bean
     // public CorsConfigurationSource corsConfigurationSource() {
     //     CorsConfiguration configuration = new CorsConfiguration();
