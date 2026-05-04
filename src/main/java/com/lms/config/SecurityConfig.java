@@ -21,7 +21,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -35,94 +34,97 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    // ================= SECURITY FILTER CHAIN =================
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+            .csrf(AbstractHttpConfigurer::disable)
 
-                        // ✅ ADD THIS LINE
-                        .requestMatchers("/api/admin/**").permitAll()
+            // ✅ IMPORTANT: CORS ENABLE
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                        .requestMatchers("/api/leaves/apply", "/api/leaves/my", "/api/leaves/balance")
-                        .hasAnyRole("EMPLOYEE", "MANAGER", "HR")
-                        .requestMatchers("/api/leaves/team", "/api/leaves/approve/**", "/api/leaves/reject/**",
-                                "/api/leaves/dashboard/manager")
-                        .hasAnyRole("MANAGER", "HR")
-                        .requestMatchers("/api/leaves/dashboard/**").authenticated()
-                        .anyRequest().authenticated())
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/admin/**").permitAll()
+                    .anyRequest().authenticated()
+            )
+
+            .authenticationProvider(authenticationProvider())
+
+            // JWT filter
+            .addFilterBefore(jwtAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
 
-    
-@Bean
-public CorsConfigurationSource corsConfigurationSource() {
+    // ================= CORS CONFIG =================
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
 
-    CorsConfiguration config = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOrigins(List.of(
-            "http://localhost:4200",
-            "http://127.0.0.1:4200",
-            "https://leave-management-frontend.amardevkar059.workers.dev"
-    ));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:4200",
+                "http://127.0.0.1:4200",
+                "https://lms-frotend-fmoq.vercel.app",
+                "https://*.workers.dev",
+                "https://*.vercel.app"
+        ));
 
-    config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+        ));
 
-    config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With"
+        ));
 
-    config.setExposedHeaders(List.of("Authorization"));
+        config.setExposedHeaders(List.of("Authorization"));
 
-    config.setAllowCredentials(true);
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-    return source;
-}
-    // @Bean
-    // public CorsConfigurationSource corsConfigurationSource() {
-    //     CorsConfiguration configuration = new CorsConfiguration();
+        source.registerCorsConfiguration("/**", config);
 
-    //     configuration.setAllowedOriginPatterns(List.of(
-    //             "http://localhost:*",
-    //             "http://127.0.0.1:*",
-    //             "https://*.vercel.app"));
+        return source;
+    }
 
-    //     configuration.setAllowedMethods(Arrays.asList(
-    //             "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-
-    //     configuration.setAllowedHeaders(Arrays.asList(
-    //             "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
-
-    //     configuration.setExposedHeaders(List.of("Authorization"));
-
-    //     configuration.setAllowCredentials(true);
-    //     configuration.setMaxAge(3600L);
-
-    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    //     source.registerCorsConfiguration("/**", configuration);
-    //     return source;
-    // }
-
+    // ================= AUTH PROVIDER =================
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+        DaoAuthenticationProvider authProvider =
+                new DaoAuthenticationProvider();
+
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
+
         return authProvider;
     }
 
+    // ================= AUTH MANAGER =================
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+
         return config.getAuthenticationManager();
     }
 
+    // ================= PASSWORD ENCODER =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
