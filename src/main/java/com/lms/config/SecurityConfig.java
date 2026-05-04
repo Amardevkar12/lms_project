@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,12 +36,12 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    // ================= SECURITY FILTER =================
+    // ================= SECURITY =================
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(AbstractHttpConfigurer::disable)
 
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
@@ -51,75 +52,50 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/admin/**").permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
             )
 
             .authenticationProvider(authenticationProvider())
-
             .addFilterBefore(jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class
-            );
+                    UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ================= CORS CONFIG (FINAL FIX) =================
+    // ================= CORS (ONLY ONE - IMPORTANT) =================
     @Bean
-public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
 
-    CorsConfiguration config = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOriginPatterns(List.of(
-            "http://localhost:4200",
-            "http://127.0.0.1:4200",
-            "https://lms-frotend-fmoq.vercel.app"
-    ));
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:4200",
+                "http://127.0.0.1:4200",
+                "https://lms-frotend-fmoq.vercel.app"
+        ));
 
-    config.setAllowedMethods(List.of(
-            "GET","POST","PUT","DELETE","OPTIONS"
-    ));
+        config.setAllowedMethods(List.of(
+                "GET","POST","PUT","DELETE","OPTIONS","PATCH"
+        ));
 
-    config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
 
-    config.setExposedHeaders(List.of("Authorization"));
+        config.setExposedHeaders(List.of("Authorization"));
 
-    config.setAllowCredentials(true);
+        config.setAllowCredentials(true);
 
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-    source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", config);
 
-    return source;
-}
+        return source;
+    }
 
-@Bean
-public org.springframework.web.filter.CorsFilter corsFilter() {
+    // ❌ REMOVE CorsFilter BEAN COMPLETELY (IMPORTANT)
+    // DO NOT USE CorsFilter + corsConfigurationSource together
 
-    CorsConfiguration config = new CorsConfiguration();
-
-    config.setAllowedOrigins(List.of(
-            "http://localhost:4200",
-            "https://lms-frotend-fmoq.vercel.app"
-    ));
-
-    config.setAllowedMethods(List.of(
-            "GET","POST","PUT","DELETE","OPTIONS"
-    ));
-
-    config.setAllowedHeaders(List.of("*"));
-
-    config.setAllowCredentials(true);
-
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
-
-    source.registerCorsConfiguration("/**", config);
-
-    return new org.springframework.web.filter.CorsFilter(source);
-}
-
-    // ================= AUTH PROVIDER =================
+    // ================= AUTH =================
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
 
@@ -132,15 +108,12 @@ public org.springframework.web.filter.CorsFilter corsFilter() {
         return authProvider;
     }
 
-    // ================= AUTH MANAGER =================
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
-
         return config.getAuthenticationManager();
     }
 
-    // ================= PASSWORD =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
