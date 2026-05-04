@@ -60,25 +60,31 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
+    
+@Bean
 public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
 
-    configuration.setAllowedOrigins(List.of(
+    CorsConfiguration config = new CorsConfiguration();
+
+    config.setAllowedOriginPatterns(List.of(
             "http://localhost:4200",
-            "https://leave-management-frontend.amardevkar059.workers.dev"
+            "http://127.0.0.1:4200",
+            "https://*.vercel.app",
+            "https://*.workers.dev"
     ));
 
-    configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+    config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
 
-    configuration.setAllowedHeaders(List.of("*"));
-    configuration.setExposedHeaders(List.of("Authorization"));
+    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
 
-    configuration.setAllowCredentials(true);
+    config.setExposedHeaders(List.of("Authorization"));
+
+    config.setAllowCredentials(true);
+    config.setMaxAge(3600L);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
+    source.registerCorsConfiguration("/**", config);
+
     return source;
 }
     // @Bean
