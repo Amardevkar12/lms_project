@@ -51,7 +51,7 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/**").permitAll()
             )
 
             .authenticationProvider(authenticationProvider())
@@ -61,15 +61,17 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ================= CORS FIX =================
+    // ================= CORS (ONLY ONE - FINAL FIX) =================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
+        config.setAllowCredentials(true);
+
         config.setAllowedOrigins(List.of(
                 "http://localhost:4200",
-                "https://lms-frotend-fmoq.vercel.app"
+                "https://lms-frotend.vercel.app"
         ));
 
         config.setAllowedMethods(List.of(
@@ -78,7 +80,7 @@ public class SecurityConfig {
 
         config.setAllowedHeaders(List.of("*"));
 
-        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
