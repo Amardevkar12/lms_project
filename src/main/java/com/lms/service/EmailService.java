@@ -7,9 +7,13 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
@@ -28,8 +32,10 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(body);
             message.setFrom(mailUsername);
+            message.setReplyTo(mailUsername);
 
             mailSender.send(message);
+            logger.info("Email accepted by SMTP. from={}, to={}, subject={}", mailUsername, to, subject);
         } catch (MailAuthenticationException e) {
             throw new IllegalStateException(
                     "Email authentication failed. Use the Gmail account email as spring.mail.username and a valid Gmail App Password as spring.mail.password.",
