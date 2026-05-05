@@ -1,0 +1,32 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.lms:leave-management-system >-------------------
+[INFO] Building Leave Management System 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ leave-management-system ---
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.0/plexus-utils-4.0.0.jar
+Progress (1): 0.9/192 kBProgress (1): 2.3/192 kBProgress (1): 3.6/192 kBProgress (1): 5.0/192 kBProgress (1): 6.4/192 kBProgress (1): 7.7/192 kBProgress (1): 9.1/192 kBProgress (1): 10/192 kB Progress (1): 12/192 kBProgress (1): 13/192 kBProgress (1): 15/192 kBProgress (1): 16/192 kBProgress (1): 17/192 kBProgress (1): 19/192 kBProgress (1): 20/192 kBProgress (1): 21/192 kBProgress (1): 23/192 kBProgress (1): 24/192 kBProgress (1): 26/192 kBProgress (1): 27/192 kBProgress (1): 28/192 kBProgress (1): 30/192 kBProgress (1): 31/192 kBProgress (1): 32/192 kBProgress (1): 34/192 kBProgress (1): 35/192 kBProgress (1): 36/192 kBProgress (1): 38/192 kBProgress (1): 39/192 kBProgress (1): 41/192 kBProgress (1): 42/192 kBProgress (1): 43/192 kBProgress (1): 45/192 kBProgress (1): 46/192 kBProgress (1): 47/192 kBProgress (1): 49/192 kBProgress (1): 50/192 kBProgress (1): 52/192 kBProgress (1): 53/192 kBProgress (1): 54/192 kBProgress (1): 56/192 kBProgress (1): 57/192 kBProgress (1): 62/192 kBProgress (1): 66/192 kBProgress (1): 70/192 kBProgress (1): 74/192 kBProgress (1): 78/192 kBProgress (1): 83/192 kBProgress (1): 87/192 kBProgress (1): 91/192 kBProgress (1): 95/192 kBProgress (1): 100/192 kBProgress (1): 104/192 kBProgress (1): 108/192 kBProgress (1): 112/192 kBProgress (1): 117/192 kBProgress (1): 121/192 kBProgress (1): 125/192 kBProgress (1): 129/192 kBProgress (1): 133/192 kBProgress (1): 138/192 kBProgress (1): 142/192 kBProgress (1): 146/192 kBProgress (1): 150/192 kBProgress (1): 155/192 kBProgress (1): 159/192 kBProgress (1): 163/192 kBProgress (1): 167/192 kBProgress (1): 172/192 kBProgress (1): 176/192 kBProgress (1): 180/192 kBProgress (1): 184/192 kBProgress (1): 188/192 kBProgress (1): 192 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.0/plexus-utils-4.0.0.jar (192 kB at 78 kB/s)
+[INFO] Deleting C:\Users\aishw\Downloads\lms-complete (3)\lms\backend\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ leave-management-system ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ leave-management-system ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 31 source files with javac [debug release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  28.731 s
+[INFO] Finished at: 2026-04-23T15:13:43+05:30
+[INFO] ------------------------------------------------------------------------

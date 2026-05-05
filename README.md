@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 # 🗓️ Leave Management System (LMS)
@@ -294,3 +295,6 @@ ng test
 - 👥 View all team leave requests with search & filter
 - ✅ Approve / ❌ Reject leaves with optional reason
 - 📈 Approval rate tracking
+=======
+# lms_project
+>>>>>>> 880c0aad4e5c2bf0f5321f2553e18f027028f674
