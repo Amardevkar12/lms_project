@@ -1,0 +1,259 @@
+
+{
+  "info": {
+    "name": "Leave Management System API",
+    "description": "Complete API collection for Leave Management System (Spring Boot + JWT)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",      "value": "http://localhost:8080" },
+    { "key": "employee_token","value": "" },
+    { "key": "manager_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register - Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/auth/register" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Employee\",\n  \"email\": \"test@lms.com\",\n  \"password\": \"password123\",\n  \"confirmPassword\": \"password123\",\n  \"role\": \"EMPLOYEE\",\n  \"department\": \"Engineering\"\n}"
+            }
+          },
+          "response": [{
+            "name": "Success",
+            "status": "OK",
+            "code": 200,
+            "body": "{\n  \"success\": true,\n  \"message\": \"User registered successfully\",\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"type\": \"Bearer\",\n    \"id\": 5,\n    \"name\": \"Test Employee\",\n    \"email\": \"test@lms.com\",\n    \"role\": \"EMPLOYEE\",\n    \"department\": \"Engineering\"\n  }\n}"
+          }]
+        },
+        {
+          "name": "Register - Manager",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/auth/register" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Manager\",\n  \"email\": \"testmgr@lms.com\",\n  \"password\": \"password123\",\n  \"confirmPassword\": \"password123\",\n  \"role\": \"MANAGER\",\n  \"department\": \"Engineering\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login - Employee",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var res = pm.response.json();",
+                "if (res.success) { pm.collectionVariables.set('employee_token', res.data.token); }"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/auth/login" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@lms.com\",\n  \"password\": \"password123\"\n}"
+            }
+          },
+          "response": [{
+            "name": "Success",
+            "status": "OK",
+            "code": 200,
+            "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"type\": \"Bearer\",\n    \"id\": 2,\n    \"name\": \"John Smith\",\n    \"email\": \"john@lms.com\",\n    \"role\": \"EMPLOYEE\",\n    \"department\": \"Engineering\"\n  }\n}"
+          }]
+        },
+        {
+          "name": "Login - Manager",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var res = pm.response.json();",
+                "if (res.success) { pm.collectionVariables.set('manager_token', res.data.token); }"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/auth/login" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@lms.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login - Invalid Credentials",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/auth/login" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@lms.com\",\n  \"password\": \"wrongpassword\"\n}"
+            }
+          },
+          "response": [{
+            "name": "Unauthorized",
+            "status": "Unauthorized",
+            "code": 401,
+            "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\"\n}"
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Employee - Leaves",
+      "item": [
+        {
+          "name": "Apply for Leave",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employee_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/leaves/apply" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2025-06-10\",\n  \"endDate\": \"2025-06-12\",\n  \"leaveType\": \"CASUAL\",\n  \"reason\": \"Personal work and family commitments\"\n}"
+            }
+          },
+          "response": [{
+            "name": "Success",
+            "status": "OK",
+            "code": 200,
+            "body": "{\n  \"success\": true,\n  \"message\": \"Leave application submitted successfully\",\n  \"data\": {\n    \"id\": 7,\n    \"employeeId\": 2,\n    \"employeeName\": \"John Smith\",\n    \"startDate\": \"2025-06-10\",\n    \"endDate\": \"2025-06-12\",\n    \"numberOfDays\": 3,\n    \"leaveType\": \"CASUAL\",\n    \"reason\": \"Personal work and family commitments\",\n    \"status\": \"PENDING\"\n  }\n}"
+          }]
+        },
+        {
+          "name": "Get My Leaves",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": { "raw": "{{base_url}}/api/leaves/my" }
+          }
+        },
+        {
+          "name": "Get Leave Balance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": { "raw": "{{base_url}}/api/leaves/balance" }
+          }
+        },
+        {
+          "name": "Employee Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": { "raw": "{{base_url}}/api/leaves/dashboard/employee" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manager - Leaves",
+      "item": [
+        {
+          "name": "Get All Team Leaves",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }],
+            "url": { "raw": "{{base_url}}/api/leaves/team" }
+          }
+        },
+        {
+          "name": "Approve Leave (ID=2)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }],
+            "url": { "raw": "{{base_url}}/api/leaves/approve/2" }
+          },
+          "response": [{
+            "name": "Success",
+            "status": "OK",
+            "code": 200,
+            "body": "{\n  \"success\": true,\n  \"message\": \"Leave request approved successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"status\": \"APPROVED\",\n    \"reviewedByName\": \"Sarah Johnson\"\n  }\n}"
+          }]
+        },
+        {
+          "name": "Reject Leave (ID=4)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/leaves/reject/4" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejectionReason\": \"Team has a critical sprint during this period.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Manager Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }],
+            "url": { "raw": "{{base_url}}/api/leaves/dashboard/manager" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Access Team Leaves as Employee (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": { "raw": "{{base_url}}/api/leaves/team" }
+          },
+          "response": [{
+            "name": "Forbidden",
+            "status": "Forbidden",
+            "code": 403,
+            "body": "{\n  \"success\": false,\n  \"message\": \"Access denied\"\n}"
+          }]
+        },
+        {
+          "name": "Apply Leave Without Token (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/leaves/apply" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2025-06-10\",\n  \"endDate\": \"2025-06-12\",\n  \"leaveType\": \"CASUAL\",\n  \"reason\": \"Test\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register with Mismatched Passwords (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/auth/register" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test\",\n  \"email\": \"test2@lms.com\",\n  \"password\": \"abc123\",\n  \"confirmPassword\": \"xyz999\",\n  \"role\": \"EMPLOYEE\",\n  \"department\": \"HR\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
