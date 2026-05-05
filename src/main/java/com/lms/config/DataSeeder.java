@@ -24,9 +24,31 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.count() == 0) {
+        boolean shouldSeedSampleData = userRepository.count() == 0;
+
+        ensureSuperAdmin();
+
+        if (shouldSeedSampleData) {
             seedUsers();
         }
+    }
+
+    private void ensureSuperAdmin() {
+        User superAdmin = userRepository.findByEmail("amardevkar78@gmail.com")
+                .orElseGet(User::new);
+
+        superAdmin.setName("Super Admin");
+        superAdmin.setEmail("amardevkar78@gmail.com");
+        superAdmin.setPassword(passwordEncoder.encode("123456"));
+        superAdmin.setContactNumber("9999999999");
+        superAdmin.setRole(Role.ADMIN);
+        superAdmin.setDepartment("Admin");
+        superAdmin.setEnabled(true);
+        superAdmin.setActive(true);
+        superAdmin.setTotalLeaves(20);
+        superAdmin.setUsedLeaves(0);
+
+        userRepository.save(superAdmin);
     }
 
     private void seedUsers() {
