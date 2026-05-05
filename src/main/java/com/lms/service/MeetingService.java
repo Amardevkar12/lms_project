@@ -53,10 +53,12 @@ public class MeetingService {
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("meeting", saved);
-        response.put("emailSent", failedEmails.isEmpty());
+        boolean emailSent = !sentEmails.isEmpty() && failedEmails.isEmpty();
+
+        response.put("emailSent", emailSent);
         response.put("sentEmails", sentEmails);
         response.put("failedEmails", failedEmails);
-        response.put("message", failedEmails.isEmpty()
+        response.put("message", emailSent
                 ? "Meeting scheduled and emails sent"
                 : "Meeting scheduled, but some emails failed");
 
