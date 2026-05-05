@@ -18,8 +18,13 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 public class LeaveRequest {
 
+    @Column(name = "employee_email")
     private String employeeEmail;
+
+    @Column(name = "from_date")
     private LocalDate fromDate;
+
+    @Column(name = "to_date")
     private LocalDate toDate;
 
     @Id
@@ -61,6 +66,16 @@ public class LeaveRequest {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    @PreUpdate
+    private void syncLegacyColumns() {
+        if (employee != null) {
+            employeeEmail = employee.getEmail();
+        }
+        fromDate = startDate;
+        toDate = endDate;
+    }
 
     public long getNumberOfDays() {
         if (startDate != null && endDate != null) {

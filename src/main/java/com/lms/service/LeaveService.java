@@ -1,12 +1,7 @@
 package com.lms.service;
 
-import com.lms.dto.DashboardStats;
-import com.lms.dto.LeaveApplyRequest;
-import com.lms.dto.LeaveResponse;
-import com.lms.dto.LeaveStatusUpdateRequest;
-import com.lms.entity.LeaveRequest;
-import com.lms.entity.LeaveStatus;
-import com.lms.entity.User;
+import com.lms.dto.*;
+import com.lms.entity.*;
 import com.lms.exception.BadRequestException;
 import com.lms.exception.ResourceNotFoundException;
 import com.lms.repository.LeaveRequestRepository;
@@ -19,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.lms.entity.Role;
 
 @Service
 public class LeaveService {
@@ -35,9 +29,15 @@ public class LeaveService {
 
     // ================= CURRENT USER =================
     private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || auth.getName() == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        return userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     // ================= APPLY LEAVE =================
@@ -58,23 +58,32 @@ public class LeaveService {
         leave.setEmployee(employee);
         leave.setStartDate(request.getStartDate());
         leave.setEndDate(request.getEndDate());
+        leave.setEmployeeEmail(employee.getEmail());
+        leave.setFromDate(request.getStartDate());
+        leave.setToDate(request.getEndDate());
         leave.setLeaveType(request.getLeaveType());
         leave.setReason(request.getReason());
         leave.setStatus(LeaveStatus.PENDING);
 
         LeaveRequest saved = leaveRequestRepository.save(leave);
 
-        List<User> managers = userRepository.findByRole(Role.MANAGER);
+        // ================= EMAIL (SAFE) =================
+        try {
+            List<User> managers = userRepository.findByRole(Role.MANAGER);
 
-        for (User manager : managers) {
-            emailService.sendEmail(
-                    manager.getEmail(),
-                    "📌 New Leave Request",
-                    "Employee: " + employee.getName() +
-                            "\nEmail: " + employee.getEmail() +
-                            "\nFrom: " + request.getStartDate() +
-                            "\nTo: " + request.getEndDate() +
-                            "\nReason: " + request.getReason());
+            for (User manager : managers) {
+                emailService.sendEmail(
+                        manager.getEmail(),
+                        "📌 New Leave Request",
+                        "Employee: " + employee.getName() +
+                                "\nEmail: " + employee.getEmail() +
+                                "\nFrom: " + request.getStartDate() +
+                                "\nTo: " + request.getEndDate() +
+                                "\nReason: " + request.getReason()
+                );
+            }
+        } catch (Exception e) {
+            System.out.println("EMAIL FAILED (ignored): " + e.getMessage());
         }
 
         return LeaveResponse.fromEntity(saved);
@@ -96,28 +105,26 @@ public class LeaveService {
         leave.setStatus(LeaveStatus.APPROVED);
         leave.setReviewedBy(manager);
 
-        // deduct leaves
         User employee = leave.getEmployee();
 
-        int newLeaves = employee.getUsedLeaves() + (int) leave.getNumberOfDays();
-        employee.setUsedLeaves(newLeaves);
+        int days = (int) leave.getNumberOfDays();
+
+        employee.setUsedLeaves(employee.getUsedLeaves() + days);
 
         userRepository.save(employee);
 
         LeaveRequest saved = leaveRequestRepository.save(leave);
 
-        // EMAIL
-        emailService.sendEmail(
-        employee.getEmail(),
-        "Leave Approved - Good News!",
-        "Dear " + employee.getName() + ",\n\n" +
-        "Good news! Your leave request has been APPROVED.\n\n" +
-        "Please make sure to complete or handover your pending tasks before your leave starts.\n\n" +
-        "Wishing you a smooth time off.\n\n" +
-        "Regards,\n" +
-        "HR Team"
-);
-
+        // EMAIL SAFE
+        try {
+            emailService.sendEmail(
+                    employee.getEmail(),
+                    "Leave Approved",
+                    "Dear " + employee.getName() + ", your leave is APPROVED."
+            );
+        } catch (Exception e) {
+            System.out.println("EMAIL FAILED (ignored)");
+        }
 
         return LeaveResponse.fromEntity(saved);
     }
@@ -144,46 +151,33 @@ public class LeaveService {
 
         LeaveRequest saved = leaveRequestRepository.save(leave);
 
-        // EMAIL
-        String reason = (request != null && request.getRejectionReason() != null)
-        ? request.getRejectionReason()
-        : "Not specified";
-
-emailService.sendEmail(
-        leave.getEmployee().getEmail(),
-        "Leave Request Update",
-        "Dear " + leave.getEmployee().getName() + ",\n\n" +
-        "We regret to inform you that your leave request has NOT been approved.\n\n" +
-        "⚠ REASON ⚠\n" +
-        "----------------------------------\n" +
-        reason + "\n" +
-        "----------------------------------\n\n" +
-        "If you need any clarification, please contact your manager or HR team.\n\n" +
-        "Regards,\n" +
-        "HR Team"
-);
+        try {
+            emailService.sendEmail(
+                    leave.getEmployee().getEmail(),
+                    "Leave Rejected",
+                    "Your leave was rejected. Reason: " +
+                            (request != null ? request.getRejectionReason() : "Not specified")
+            );
+        } catch (Exception e) {
+            System.out.println("EMAIL FAILED (ignored)");
+        }
 
         return LeaveResponse.fromEntity(saved);
     }
 
     // ================= MY LEAVES =================
     public List<LeaveResponse> getMyLeaves() {
-        User employee = getCurrentUser();
-
-        return leaveRequestRepository.findByEmployeeOrderByCreatedAtDesc(employee)
-                .stream()
-                .map(LeaveResponse::fromEntity)
-                .collect(Collectors.toList());
+        return leaveRequestRepository.findByEmployeeOrderByCreatedAtDesc(getCurrentUser())
+                .stream().map(LeaveResponse::fromEntity).collect(Collectors.toList());
     }
 
     // ================= ALL LEAVES =================
     public List<LeaveResponse> getAllLeaves() {
         return leaveRequestRepository.findAllByOrderByCreatedAtDesc()
-                .stream()
-                .map(LeaveResponse::fromEntity)
-                .collect(Collectors.toList());
+                .stream().map(LeaveResponse::fromEntity).collect(Collectors.toList());
     }
 
+    // ================= DASHBOARD =================
     public DashboardStats getEmployeeDashboard() {
 
         User employee = getCurrentUser();
@@ -217,5 +211,4 @@ emailService.sendEmail(
 
         return stats;
     }
-
 }
