@@ -69,9 +69,11 @@ public class SecurityConfig {
 
         config.setAllowCredentials(true);
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:4200",
-                "https://lms-frotend.vercel.app"
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "https://lms-frotend.vercel.app",
+                "https://*.vercel.app"
         ));
 
         config.setAllowedMethods(List.of(

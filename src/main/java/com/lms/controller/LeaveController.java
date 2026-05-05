@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/leaves")
-@CrossOrigin(originPatterns = { "http://localhost:*", "http://127.0.0.1:*" })
+@CrossOrigin(originPatterns = { "http://localhost:*", "http://127.0.0.1:*", "https://lms-frotend.vercel.app", "https://*.vercel.app" })
 public class LeaveController {
 
     @Autowired

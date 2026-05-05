@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/employee")
-@CrossOrigin(originPatterns = {"http://localhost:*", "http://127.0.0.1:*"})
+@CrossOrigin(originPatterns = {"http://localhost:*", "http://127.0.0.1:*", "https://lms-frotend.vercel.app", "https://*.vercel.app"})
 public class EmployeeController {
 
     private final EmployeeService employeeService;

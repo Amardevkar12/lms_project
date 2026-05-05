@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(originPatterns = { "http://localhost:*", "http://127.0.0.1:*" })
+@CrossOrigin(originPatterns = { "http://localhost:*", "http://127.0.0.1:*", "https://lms-frotend.vercel.app", "https://*.vercel.app" })
 public class AdminController {
 
         private final AdminService adminService;
